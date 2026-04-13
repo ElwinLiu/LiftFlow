@@ -1,0 +1,17 @@
+.DS_Store
+
+# Xcode
+DerivedData/
+build/
+*.xcuserstate
+xcuserdata/
+
+# Swift Package Manager
+.build/
+
+# Node
+node_modules/
+npm-debug.log*
+
+# Vitest
+coverage/
