@@ -18,9 +18,8 @@ The app gives the user a reusable prompt template. The user copies this prompt i
 
 The normalized routine should include the key workout fields the app needs, such as:
 - exercise type
-- sets
-- reps
-- duration
+- sets or set details
+- reps or duration
 - rest time
 - notes
 - other relevant exercise-specific information
@@ -34,7 +33,7 @@ After the chatbot rewrites the routine into the expected format, the user pastes
 The app reads the pasted routine and converts it into the app’s internal workout structure.
 
 At this stage, the app should:
-- identify routine sections and exercises
+- identify exercises in order
 - extract exercise fields
 - classify exercise type
 - prepare data for validation and saving
@@ -44,9 +43,8 @@ The app checks whether each exercise has the required information.
 
 Examples of potentially required information include:
 - exercise identity
-- sets
-- reps for rep-based exercises
-- duration for timed exercises
+- exercise type
+- any set-level details the routine needs
 
 The app should distinguish between:
 - required fields
@@ -97,16 +95,8 @@ Copy prompt from app -> paste prompt into chatbot -> chatbot normalizes routine 
 
 This improves parsing reliability and reduces ambiguity before the app handles the routine.
 
-### Exercise-aware requirements
-Different exercise types need different fields. The import flow should reflect this.
-
-Examples:
-- strength exercise: sets, reps, rest
-- cardio exercise: duration or distance
-- isometric exercise: sets, hold duration
-- mobility exercise: duration, side, rounds
-
-The app should not force the exact same required fields for every exercise.
+### Ordered routine structure
+The routine should be stored as an ordered list of exercises, and each routine exercise can own multiple set rows when needed.
 
 ### User control over AI assumptions
 AI can help normalize text and suggest missing values, but the user should remain in control. Whenever the model generates missing information, the UI should make that explicit.
@@ -126,4 +116,3 @@ AI can help normalize text and suggest missing values, but the user should remai
 The app’s workflow should reduce friction between AI-generated workout advice and real execution.
 
 The product value is not just workout tracking and not just AI chat. The value is helping users quickly convert rough workout plans into reliable, structured routines they can immediately use.
-

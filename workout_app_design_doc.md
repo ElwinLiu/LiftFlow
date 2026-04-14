@@ -2,7 +2,7 @@
 
 ## Status
 
-Draft 1
+Draft 2
 
 ## Date
 
@@ -52,9 +52,9 @@ The app should not save raw AI output directly as a final routine. Imported text
 
 AI may suggest missing values, but suggestions must be clearly labeled and user-reviewable.
 
-### 4. Exercise-aware validation
+### 4. Draft before save
 
-Different exercise types require different fields. Validation should reflect exercise type instead of forcing one uniform schema.
+Imported content should become a reviewable draft before it becomes a saved routine.
 
 ## Proposed Tech Stack
 
@@ -97,7 +97,7 @@ This should be treated as optional in MVP. The primary source of truth should be
 ### Why PostgreSQL
 
 - The core data is relational
-- The app needs structured routines, sections, exercises, aliases, and canonical exercise records
+- The app needs structured routines, routine exercises, routine exercise sets, aliases, and canonical exercise records
 - Exercise name resolution benefits from SQL querying and fuzzy matching support
 
 ### Why TypeScript On The Backend
@@ -126,7 +126,7 @@ Those workflows are easier to build and maintain around a managed backend plus r
 3. User pastes normalized text into LiftFlow
 4. LiftFlow sends the text to the backend import endpoint
 5. Backend parses the text into structured draft data
-6. Backend validates required fields by exercise type
+6. Backend validates structural completeness of the draft
 7. Backend resolves exercise names against canonical exercise records
 8. Backend returns:
    - parsed routine draft
@@ -149,7 +149,7 @@ Those workflows are easier to build and maintain around a managed backend plus r
 
 #### 2. Import Review Screen
 
-- Displays parsed sections and exercises
+- Displays parsed exercises in routine order
 - Highlights missing required fields
 - Shows AI-generated suggestions separately from confirmed values
 - Lets the user edit fields
@@ -171,9 +171,8 @@ Responsibility:
 #### 2. Validate Draft Function
 
 Responsibility:
-- apply exercise-type-aware validation rules
-- mark missing required fields
-- separate required, optional, and inferable values
+- validate required draft fields
+- mark unresolved or incomplete items
 
 #### 3. Exercise Resolution Function
 
@@ -196,118 +195,23 @@ Responsibility:
 
 ## Data Model
 
-### Core Entities
+The current database source of truth is [data_model_audit.md](/Users/elwin/code/LiftFlow/data_model_audit.md).
 
-#### users
+At a high level, the database currently centers on:
 
-Stores application users.
+- `routines`
+- `routine_exercises`
+- `routine_exercise_sets`
+- `canonical_exercises`
+- `exercise_aliases`
+- `import_drafts`
 
-#### routines
+Important simplifications in the current model:
 
-Top-level saved workout routine.
-
-Suggested fields:
-- id
-- user_id
-- title
-- goal
-- source_type
-- created_at
-- updated_at
-
-#### routine_sections
-
-Logical sections within a routine.
-
-Suggested fields:
-- id
-- routine_id
-- title
-- position
-
-#### routine_exercises
-
-Exercises within a section.
-
-Suggested fields:
-- id
-- routine_section_id
-- canonical_exercise_id
-- original_name
-- exercise_type
-- position
-- sets
-- reps
-- duration_seconds
-- rest_seconds
-- distance_value
-- distance_unit
-- side
-- rounds
-- notes
-
-#### canonical_exercises
-
-Master exercise records used for tracking and analytics.
-
-Suggested fields:
-- id
-- name
-- exercise_type
-- equipment
-- is_active
-
-#### exercise_aliases
-
-Alternative names for canonical exercises.
-
-Suggested fields:
-- id
-- canonical_exercise_id
-- alias
-
-#### import_drafts
-
-Temporary server-side import session state.
-
-Suggested fields:
-- id
-- user_id
-- raw_text
-- parsed_payload_json
-- validation_payload_json
-- status
-- created_at
-- updated_at
-
-## Validation Rules
-
-Validation should depend on exercise type.
-
-Examples:
-
-- strength exercise
-  - required: sets, reps
-  - optional: rest, notes
-
-- cardio exercise
-  - required: duration or distance
-  - optional: intensity, notes
-
-- isometric exercise
-  - required: sets, hold duration
-  - optional: rest, notes
-
-- mobility exercise
-  - required: duration or rounds
-  - optional: side, notes
-
-Validation results should distinguish:
-
-- missing required field
-- optional missing field
-- suggested value available
-- unresolved exercise identity
+- routines contain an ordered list of exercises directly
+- sets are stored separately in `routine_exercise_sets`
+- there is no `routine_sections` table
+- `exercise_type` is currently a routine-facing classification: `warmup`, `workout`, or `stretch`
 
 ## AI Usage Plan
 
@@ -316,8 +220,8 @@ AI should be used conservatively and only on the server side.
 ### Approved AI Roles
 
 - normalize text into a predictable structure when needed
-- suggest missing values for fields that can be reasonably inferred
-- help classify ambiguous exercise types when deterministic rules are insufficient
+- suggest missing values when the product later decides that is appropriate
+- help map imported names to canonical exercises
 
 ### AI Rules
 
@@ -368,7 +272,6 @@ Request:
 Response:
 - validation issues
 - required missing fields
-- optional missing fields
 
 ### POST /import/resolve-exercises
 
@@ -418,14 +321,14 @@ This keeps infrastructure cost near zero while preserving a path to scale beyond
 
 ### Phase 1: UX And Data Model
 
-- define routine, section, exercise, and canonical exercise schemas
+- define routine, routine exercise, routine exercise set, and canonical exercise schemas
 - build import entry and review UI in SwiftUI
 - create Supabase tables
 
 ### Phase 2: Parsing And Validation
 
 - implement parse function
-- implement validation rules by exercise type
+- implement structural validation rules
 - return structured review payloads
 
 ### Phase 3: Exercise Resolution
@@ -474,6 +377,6 @@ The MVP should not attempt to solve every workout format. It should optimize for
 
 Build LiftFlow as an iOS-first app using SwiftUI on the client and Supabase on the backend.
 
-Use PostgreSQL as the system of record and TypeScript Edge Functions for parsing, validation, exercise resolution, and AI suggestions.
+Use PostgreSQL as the system of record. Treat [data_model_audit.md](/Users/elwin/code/LiftFlow/data_model_audit.md) as the current source of truth for the database shape.
 
 This gives the product a low-cost MVP path, keeps the architecture simple, and directly supports the core workflow of turning rough workout text into reliable structured routines.
