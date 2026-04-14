@@ -10,6 +10,7 @@
 		A00000000000000000000011 /* LiftFlowApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000001 /* LiftFlowApp.swift */; };
 		A00000000000000000000012 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000002 /* ContentView.swift */; };
 		A00000000000000000000013 /* SupabaseBootstrap.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000004 /* SupabaseBootstrap.swift */; };
+		A00000000000000000000014 /* CanonicalExerciseCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000005 /* CanonicalExerciseCatalog.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -17,6 +18,7 @@
 		A00000000000000000000002 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		A00000000000000000000003 /* LiftFlow.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LiftFlow.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A00000000000000000000004 /* SupabaseBootstrap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseBootstrap.swift; sourceTree = "<group>"; };
+		A00000000000000000000005 /* CanonicalExerciseCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CanonicalExerciseCatalog.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -44,6 +46,7 @@
 				A00000000000000000000001 /* LiftFlowApp.swift */,
 				A00000000000000000000002 /* ContentView.swift */,
 				A00000000000000000000004 /* SupabaseBootstrap.swift */,
+				A00000000000000000000005 /* CanonicalExerciseCatalog.swift */,
 			);
 			path = LiftFlow;
 			sourceTree = "<group>";
@@ -125,6 +128,7 @@
 				A00000000000000000000011 /* LiftFlowApp.swift in Sources */,
 				A00000000000000000000012 /* ContentView.swift in Sources */,
 				A00000000000000000000013 /* SupabaseBootstrap.swift in Sources */,
+				A00000000000000000000014 /* CanonicalExerciseCatalog.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

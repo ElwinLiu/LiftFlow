@@ -26,7 +26,7 @@ It intentionally avoids backend business logic, validation rules, parsing flow, 
 | --- | --- | --- | --- |
 | `id` | uuid | No | Primary key for the flow-specific exercise entry |
 | `flow_id` | uuid | No | FK to `flows.id` |
-| `canonical_exercise_id` | uuid | Yes | FK to `canonical_exercises.id` when matched |
+| `canonical_exercise_key` | text | Yes | Stable app-defined exercise key when matched against the embedded Swift catalog |
 | `order_index` | integer | No | Exercise order within the flow |
 | `original_name` | text | No | Original imported or user-entered name |
 | `display_name` | text | No | Name shown in the UI |
@@ -51,24 +51,20 @@ It intentionally avoids backend business logic, validation rules, parsing flow, 
 | `created_at` | timestamptz | No | Creation time |
 | `updated_at` | timestamptz | No | Last update time |
 
-### Table: `canonical_exercises`
+## Embedded Reference Data
 
-| Column | Type | Nullable | Notes |
-| --- | --- | --- | --- |
-| `id` | uuid | No | Primary key |
-| `name` | text | No | Canonical exercise name |
-| `aliases` | text | Yes | Comma-separated aliases, concatenated by `,` |
-| `equipment_json` | jsonb | Yes | Optional equipment list |
-| `notes` | text | Yes | Optional plain-text notes for short cues, caveats, or coaching reminders |
-| `instructions` | text | Yes | Optional Markdown-backed how-to content rendered as formatted guidance in the UI |
-| `created_at` | timestamptz | No | Creation time |
-| `updated_at` | timestamptz | No | Last update time |
+Canonical exercises are no longer modeled as a server table.
 
-Recommended modeling note:
+They should live in the Swift app bundle as embedded reference data with:
 
-- use `notes` for short unformatted text
-- use `instructions` for reusable exercise how-to content
-- store Markdown in `instructions` and render it as formatted content in the client
+- a stable `key`
+- a display `name`
+- `aliases` for import matching
+- optional `equipment`
+- optional `notes`
+- optional `instructions`
+
+The database only needs to persist the selected `canonical_exercise_key` on each `flow_exercises` row.
 
 ### Table: `import_drafts`
 

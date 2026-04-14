@@ -65,16 +65,16 @@ Use this when the missing fields can reasonably be generated based on exercise t
 These generated values should be clearly presented as suggestions, not facts.
 
 ### 7. App resolves exercises to canonical records
-Exercise names from chatbot output may vary. The app should map imported exercise names to canonical exercises in the app database.
+Exercise names from chatbot output may vary. The app should map imported exercise names to canonical exercises in the embedded app catalog.
 
 This may use:
 - alias mapping
 - fuzzy matching
 - fallback selection or creation flow
 
-In the current database direction, aliases are stored on the canonical exercise record rather than in a separate alias table.
+In the current direction, aliases live on the embedded canonical exercise definition rather than in a separate alias table.
 
-The goal is to make sure imported flows connect to the correct exercise records for tracking, media, and analytics.
+The goal is to make sure imported flows connect to the correct canonical exercise key for tracking, media, and analytics.
 
 Canonical exercise records may also carry reusable reference content for display, including:
 - `notes` for short plain-text guidance
@@ -114,7 +114,7 @@ AI can help normalize text and suggest missing values, but the user should remai
 3. Parse flow data into internal structure
 4. Detect missing required fields
 5. Let the user fill them manually or accept AI suggestions
-6. Resolve exercises against canonical exercise records
+6. Resolve exercises against the embedded canonical exercise catalog
 7. Review and save the flow
 
 ## Summary

@@ -99,8 +99,8 @@ The app should be local-first for active usage. Supabase remains the cross-devic
 ### Why PostgreSQL
 
 - The core data is relational
-- The app needs structured flows, flow exercises, flow exercise sets, and canonical exercise records
-- Exercise name resolution benefits from SQL querying and fuzzy matching support
+- The app needs structured flows, flow exercises, flow exercise sets, and import drafts
+- Exercise name resolution can happen locally against an embedded exercise catalog, while persisted flow data still fits a relational model well
 
 ### Why Direct SwiftUI To Supabase
 
@@ -129,7 +129,7 @@ CloudKit is a valid Apple-native sync option, but it is not the best center of g
 - parsing imported text
 - applying validation rules
 - generating AI suggestions
-- resolving imported exercise names against canonical data
+- resolving imported exercise names against an embedded canonical exercise catalog
 
 Those workflows are easier to build and maintain around a managed relational backend. For MVP, parsing, validation, and most resolution logic can live in the app, while secret-dependent AI operations can move to Edge Functions later.
 
@@ -142,7 +142,7 @@ Those workflows are easier to build and maintain around a managed relational bac
 3. User pastes normalized text into LiftFlow
 4. LiftFlow parses the text into structured draft data locally
 5. LiftFlow validates structural completeness of the draft locally
-6. LiftFlow resolves exercise names against canonical exercise records using locally cached data when available
+6. LiftFlow resolves exercise names against the embedded canonical exercise catalog in Swift
 7. LiftFlow stores drafts and pending edits locally first
 8. LiftFlow syncs drafts and finalized flows to Supabase when connectivity is available
 9. If a secret-dependent AI action is needed later, LiftFlow calls a Supabase Edge Function for suggestions when online
@@ -178,7 +178,7 @@ Those workflows are easier to build and maintain around a managed relational bac
 #### 1. Database And Auth
 
 Responsibility:
-- store flows, flow exercises, sets, canonical exercises, and import drafts
+- store flows, flow exercises, sets, and import drafts
 - authenticate users with Supabase Auth
 - enforce row access with RLS
 - receive synced changes from the app and provide cross-device persistence
@@ -206,7 +206,7 @@ Responsibility:
 #### 3. Resolve Exercises In The App
 
 Responsibility:
-- map imported exercise names to canonical exercise records fetched from Supabase
+- map imported exercise names to canonical exercise definitions embedded in the Swift app bundle
 - use deterministic matching first and fuzzy matching second
 - show candidate matches if confidence is not high enough
 
@@ -220,7 +220,7 @@ Responsibility:
 
 Responsibility:
 - upload pending local changes when connectivity is available
-- fetch canonical exercise updates and remote flow changes
+- fetch remote flow changes
 - track sync state so the UI can show whether local changes are pending or synced
 
 ## Data Model
@@ -232,8 +232,9 @@ At a high level, the database currently centers on:
 - `flows`
 - `flow_exercises`
 - `flow_exercise_sets`
-- `canonical_exercises`
 - `import_drafts`
+
+The canonical exercise catalog is embedded in the Swift app, not stored in Supabase.
 
 Important simplifications in the current model:
 
@@ -241,8 +242,8 @@ Important simplifications in the current model:
 - sets are stored separately in `flow_exercise_sets`
 - there is no `flow_sections` table
 - `exercise_type` is currently a flow-facing classification: `warmup`, `workout`, or `stretch`
-- aliases are stored on `canonical_exercises.aliases` as a comma-separated field
-- canonical exercise instructional content should be split between plain `notes` and formatted `instructions`
+- `flow_exercises.canonical_exercise_key` stores the selected stable app-defined exercise key
+- aliases, equipment, notes, and instructions live in the embedded Swift catalog
 
 ## AI Usage Plan
 
@@ -252,7 +253,7 @@ AI should be used conservatively and only on the server side.
 
 - normalize text into a predictable structure when needed
 - suggest missing values when the product later decides that is appropriate
-- help map imported names to canonical exercises
+- help map imported names to embedded canonical exercises
 
 ### AI Rules
 
@@ -277,7 +278,7 @@ Resolution should be deterministic first and fuzzy second.
 
 Each imported exercise should return:
 
-- resolved canonical exercise id if confidence is high
+- resolved canonical exercise key if confidence is high
 - a confidence score
 - candidate matches if confidence is not high enough
 - unmatched status if no acceptable candidate exists
@@ -295,7 +296,6 @@ The app should use local-first data access with direct authenticated sync to Sup
 ### Direct Supabase Access
 
 - sync import drafts, flows, flow exercises, and flow exercise sets
-- refresh canonical exercises into the local cache
 - authenticate the current user
 
 ### Optional Edge Function Calls
@@ -326,7 +326,6 @@ The app should use local-first data access with direct authenticated sync to Sup
 
 - first-time sign in
 - first sync on a new device
-- fetching updated canonical exercises that are not already cached
 - AI suggestion requests
 - syncing local changes to Supabase
 
@@ -352,11 +351,11 @@ This keeps infrastructure cost near zero while preserving a path to cross-device
 
 ### Phase 1: UX And Data Model
 
-- define flow, flow exercise, flow exercise set, and canonical exercise schemas
+- define flow, flow exercise, and flow exercise set schemas plus the embedded canonical exercise model
 - build import entry and review UI in SwiftUI
 - create Supabase tables
 - define initial RLS policies
-- define local persistence models for cached flows, drafts, and pending sync state
+- define local persistence models for cached flows, drafts, pending sync state, and the bundled exercise catalog
 
 ### Phase 2: Parsing And Validation
 
@@ -366,10 +365,10 @@ This keeps infrastructure cost near zero while preserving a path to cross-device
 
 ### Phase 3: Exercise Resolution
 
-- create canonical exercise table
+- create the embedded canonical exercise catalog in Swift
 - add alias support
 - add fuzzy matching
-- cache canonical exercise data locally
+- keep the catalog versioned with app releases
 
 ### Phase 4: Local-First Sync
 

@@ -10,21 +10,10 @@ create table public.flows (
     updated_at timestamptz not null default timezone('utc', now())
 );
 
-create table public.canonical_exercises (
-    id uuid primary key default gen_random_uuid(),
-    name text not null unique,
-    aliases text,
-    equipment_json jsonb,
-    notes text,
-    instructions text,
-    created_at timestamptz not null default timezone('utc', now()),
-    updated_at timestamptz not null default timezone('utc', now())
-);
-
 create table public.flow_exercises (
     id uuid primary key default gen_random_uuid(),
     flow_id uuid not null references public.flows (id) on delete cascade,
-    canonical_exercise_id uuid references public.canonical_exercises (id) on delete set null,
+    canonical_exercise_key text,
     order_index integer not null,
     original_name text not null,
     display_name text not null,
@@ -62,6 +51,6 @@ create table public.import_drafts (
 
 create index flows_user_id_idx on public.flows (user_id);
 create index flow_exercises_flow_id_idx on public.flow_exercises (flow_id);
-create index flow_exercises_canonical_exercise_id_idx on public.flow_exercises (canonical_exercise_id);
+create index flow_exercises_canonical_exercise_key_idx on public.flow_exercises (canonical_exercise_key);
 create index flow_exercise_sets_flow_exercise_id_idx on public.flow_exercise_sets (flow_exercise_id);
 create index import_drafts_user_id_idx on public.import_drafts (user_id);
