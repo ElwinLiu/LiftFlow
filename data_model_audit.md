@@ -12,8 +12,8 @@ It intentionally avoids backend business logic, validation rules, parsing flow, 
 
 | Column | Type | Nullable | Notes |
 | --- | --- | --- | --- |
-| `id` | UUID or text | No | Primary key |
-| `user_id` | UUID or text | No | Owning user |
+| `id` | uuid | No | Primary key |
+| `user_id` | uuid | No | Owning user, FK to `auth.users.id` |
 | `title` | text | No | Flow title |
 | `description` | text | Yes | Optional flow description |
 | `notes` | text | Yes | Optional flow notes |
@@ -24,9 +24,9 @@ It intentionally avoids backend business logic, validation rules, parsing flow, 
 
 | Column | Type | Nullable | Notes |
 | --- | --- | --- | --- |
-| `id` | UUID or text | No | Primary key for the flow-specific exercise entry |
-| `flow_id` | UUID or text | No | FK to `flows.id` |
-| `canonical_exercise_id` | UUID or text | Yes | FK to `canonical_exercises.id` when matched |
+| `id` | uuid | No | Primary key for the flow-specific exercise entry |
+| `flow_id` | uuid | No | FK to `flows.id` |
+| `canonical_exercise_id` | uuid | Yes | FK to `canonical_exercises.id` when matched |
 | `order_index` | integer | No | Exercise order within the flow |
 | `original_name` | text | No | Original imported or user-entered name |
 | `display_name` | text | No | Name shown in the UI |
@@ -39,8 +39,8 @@ It intentionally avoids backend business logic, validation rules, parsing flow, 
 
 | Column | Type | Nullable | Notes |
 | --- | --- | --- | --- |
-| `id` | UUID or text | No | Primary key |
-| `flow_exercise_id` | UUID or text | No | FK to `flow_exercises.id` |
+| `id` | uuid | No | Primary key |
+| `flow_exercise_id` | uuid | No | FK to `flow_exercises.id` |
 | `order_index` | integer | No | Set order within the flow exercise |
 | `reps` | integer | Yes | Optional rep count |
 | `duration_value` | numeric | Yes | Optional duration value for the set |
@@ -55,7 +55,7 @@ It intentionally avoids backend business logic, validation rules, parsing flow, 
 
 | Column | Type | Nullable | Notes |
 | --- | --- | --- | --- |
-| `id` | UUID or text | No | Primary key |
+| `id` | uuid | No | Primary key |
 | `name` | text | No | Canonical exercise name |
 | `aliases` | text | Yes | Comma-separated aliases, concatenated by `,` |
 | `equipment_json` | jsonb | Yes | Optional equipment list |
@@ -74,8 +74,8 @@ Recommended modeling note:
 
 | Column | Type | Nullable | Notes |
 | --- | --- | --- | --- |
-| `id` | UUID or text | No | Primary key |
-| `user_id` | UUID or text | Yes | Optional for anonymous draft handling |
+| `id` | uuid | No | Primary key |
+| `user_id` | uuid | Yes | Optional for anonymous draft handling, FK to `auth.users.id` |
 | `raw_input` | text | No | Natural language input or pasted normalized text |
 | `draft_json` | jsonb | No | Serialized draft payload |
 | `status` | text | No | Draft lifecycle state |

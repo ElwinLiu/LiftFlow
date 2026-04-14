@@ -9,12 +9,14 @@
 /* Begin PBXBuildFile section */
 		A00000000000000000000011 /* LiftFlowApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000001 /* LiftFlowApp.swift */; };
 		A00000000000000000000012 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000002 /* ContentView.swift */; };
+		A00000000000000000000013 /* SupabaseBootstrap.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000004 /* SupabaseBootstrap.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		A00000000000000000000001 /* LiftFlowApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiftFlowApp.swift; sourceTree = "<group>"; };
 		A00000000000000000000002 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		A00000000000000000000003 /* LiftFlow.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LiftFlow.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A00000000000000000000004 /* SupabaseBootstrap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseBootstrap.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -41,6 +43,7 @@
 			children = (
 				A00000000000000000000001 /* LiftFlowApp.swift */,
 				A00000000000000000000002 /* ContentView.swift */,
+				A00000000000000000000004 /* SupabaseBootstrap.swift */,
 			);
 			path = LiftFlow;
 			sourceTree = "<group>";
@@ -121,6 +124,7 @@
 			files = (
 				A00000000000000000000011 /* LiftFlowApp.swift in Sources */,
 				A00000000000000000000012 /* ContentView.swift in Sources */,
+				A00000000000000000000013 /* SupabaseBootstrap.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -189,10 +193,14 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.elwin.LiftFlow;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
+				SUPABASE_PUBLISHABLE_KEY = "";
+				SUPABASE_URL = "";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
+				INFOPLIST_KEY_SUPABASE_PUBLISHABLE_KEY = "$(SUPABASE_PUBLISHABLE_KEY)";
+				INFOPLIST_KEY_SUPABASE_URL = "$(SUPABASE_URL)";
 			};
 			name = Debug;
 		};
@@ -215,10 +223,14 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.elwin.LiftFlow;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
+				SUPABASE_PUBLISHABLE_KEY = "";
+				SUPABASE_URL = "";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
+				INFOPLIST_KEY_SUPABASE_PUBLISHABLE_KEY = "$(SUPABASE_PUBLISHABLE_KEY)";
+				INFOPLIST_KEY_SUPABASE_URL = "$(SUPABASE_URL)";
 			};
 			name = Release;
 		};

@@ -2,11 +2,11 @@
 
 ## Status
 
-Draft 2
+Draft 5
 
 ## Date
 
-April 12, 2026
+April 14, 2026
 
 ## Overview
 
@@ -28,6 +28,7 @@ The main product value is not generic workout logging and not generic AI chat. T
 - Keep the user in control of AI-generated assumptions
 - Build the MVP with low infrastructure cost and low operational complexity
 - Use a stack that is realistic for an iOS-first solo product
+- Keep core workout usage reliable even with poor gym connectivity
 
 ## Non-Goals For MVP
 
@@ -64,20 +65,21 @@ Imported content should become a reviewable draft before it becomes a saved flow
 - UI framework: SwiftUI
 - App pattern: MVVM with modern SwiftUI state management
 - Concurrency: async/await
-- Networking: URLSession
+- Client SDK: `supabase-swift`
 
-### Backend
+### Managed Backend Platform
 
-- Platform: Supabase
+- Managed services: Supabase
 - Database: PostgreSQL
-- Server-side language: TypeScript
-- Server-side runtime: Supabase Edge Functions
+- Auth: Supabase Auth
+- Storage: Supabase Storage if needed later
+- Server-side code: optional Supabase Edge Functions only for secret-dependent operations
 
-### Optional Local Persistence
+### Local Persistence
 
-- SwiftData for draft caching and local session state if needed
+- SwiftData for cached flows, import drafts, local session state, and pending sync operations
 
-This should be treated as optional in MVP. The primary source of truth should be the backend database.
+The app should be local-first for active usage. Supabase remains the cross-device source of truth, but the app should not depend on live network access for the core workout flow.
 
 ## Why This Stack
 
@@ -90,7 +92,7 @@ This should be treated as optional in MVP. The primary source of truth should be
 ### Why Supabase
 
 - It gives a managed PostgreSQL database
-- It includes auth, storage, and server functions in one product
+- It includes auth and storage in one product
 - It removes most infrastructure setup for an MVP
 - It has a free tier sufficient for early testing and a small initial user base
 
@@ -100,11 +102,25 @@ This should be treated as optional in MVP. The primary source of truth should be
 - The app needs structured flows, flow exercises, flow exercise sets, and canonical exercise records
 - Exercise name resolution benefits from SQL querying and fuzzy matching support
 
-### Why TypeScript On The Backend
+### Why Direct SwiftUI To Supabase
 
-- It is the default, low-friction choice for Supabase Edge Functions
-- It works well for JSON request/response handling
-- It is a pragmatic choice for calling AI APIs and shaping structured responses
+- It avoids the cost and operational overhead of hosting a custom backend service
+- It matches the product goal of keeping as much MVP logic as possible inside the app
+- Supabase already provides the hosted database, auth, and client access patterns needed for an iOS-first app
+- It lets the app ship faster as long as data access is protected with strong Row Level Security policies
+
+### Why Local-First App State
+
+- Gym connectivity is often unreliable, so the app should remain usable without stable network access
+- Draft editing, flow review, and already-fetched workout data should feel instant
+- Local-first state reduces user-visible latency and turns sync into a background concern instead of a blocking interaction
+- Supabase still works well as the remote system of record across devices
+
+### Why Edge Functions Only When Needed
+
+- Secret-dependent features such as AI suggestions should not live in the mobile app
+- Edge Functions give a small server-side surface without requiring a full custom backend
+- This keeps the default architecture simple while leaving room for secure server-side work later
 
 ### Why Not CloudKit As Primary Backend
 
@@ -115,7 +131,7 @@ CloudKit is a valid Apple-native sync option, but it is not the best center of g
 - generating AI suggestions
 - resolving imported exercise names against canonical data
 
-Those workflows are easier to build and maintain around a managed backend plus relational database.
+Those workflows are easier to build and maintain around a managed relational backend. For MVP, parsing, validation, and most resolution logic can live in the app, while secret-dependent AI operations can move to Edge Functions later.
 
 ## System Architecture
 
@@ -124,17 +140,14 @@ Those workflows are easier to build and maintain around a managed backend plus r
 1. User copies a normalization prompt from the app
 2. User pastes the prompt into a chatbot and gets normalized workout text
 3. User pastes normalized text into LiftFlow
-4. LiftFlow sends the text to the backend import endpoint
-5. Backend parses the text into structured draft data
-6. Backend validates structural completeness of the draft
-7. Backend resolves exercise names against canonical exercise records
-8. Backend returns:
-   - parsed flow draft
-   - validation issues
-   - exercise match candidates
-   - AI suggestions for safe-to-suggest missing values
-9. User reviews and edits the draft in the app
-10. User saves the finalized flow
+4. LiftFlow parses the text into structured draft data locally
+5. LiftFlow validates structural completeness of the draft locally
+6. LiftFlow resolves exercise names against canonical exercise records using locally cached data when available
+7. LiftFlow stores drafts and pending edits locally first
+8. LiftFlow syncs drafts and finalized flows to Supabase when connectivity is available
+9. If a secret-dependent AI action is needed later, LiftFlow calls a Supabase Edge Function for suggestions when online
+10. User reviews and edits the draft in the app
+11. User saves the finalized flow
 
 ## MVP Components
 
@@ -160,38 +173,55 @@ Those workflows are easier to build and maintain around a managed backend plus r
 - Shows the final flow summary
 - Saves validated flow data
 
-### Backend Services
+### Supabase And Server-Side Responsibilities
 
-#### 1. Parse Import Function
+#### 1. Database And Auth
+
+Responsibility:
+- store flows, flow exercises, sets, canonical exercises, and import drafts
+- authenticate users with Supabase Auth
+- enforce row access with RLS
+- receive synced changes from the app and provide cross-device persistence
+
+#### 2. Optional Edge Functions
+
+Responsibility:
+- call AI providers securely when the feature requires server-held secrets
+- run any privileged or server-only workflows that should not live in the client
+
+### App Responsibilities
+
+#### 1. Parse Import Locally
 
 Responsibility:
 - accept pasted normalized text
 - convert text into an initial structured flow draft
 
-#### 2. Validate Draft Function
+#### 2. Validate Draft Locally
 
 Responsibility:
 - validate required draft fields
 - mark unresolved or incomplete items
 
-#### 3. Exercise Resolution Function
+#### 3. Resolve Exercises In The App
 
 Responsibility:
-- map imported exercise names to canonical exercise records
-- use aliases and fuzzy matching
-- return candidate matches if confidence is not high enough
+- map imported exercise names to canonical exercise records fetched from Supabase
+- use deterministic matching first and fuzzy matching second
+- show candidate matches if confidence is not high enough
 
-#### 4. Suggest Missing Values Function
-
-Responsibility:
-- generate suggestions only for fields safe to suggest
-- return values as suggestions, not confirmed data
-
-#### 5. Save Flow Function
+#### 4. Persist Locally First
 
 Responsibility:
-- accept user-confirmed flow data
-- persist final validated flow records
+- store import drafts, cached flows, and pending changes locally
+- keep the active workout flow usable without requiring live network access
+
+#### 5. Sync With Supabase
+
+Responsibility:
+- upload pending local changes when connectivity is available
+- fetch canonical exercise updates and remote flow changes
+- track sync state so the UI can show whether local changes are pending or synced
 
 ## Data Model
 
@@ -252,61 +282,61 @@ Each imported exercise should return:
 - candidate matches if confidence is not high enough
 - unmatched status if no acceptable candidate exists
 
-## API Shape
+## Data Access Shape
 
-The API should remain simple for MVP.
+The app should use local-first data access with direct authenticated sync to Supabase.
 
-### POST /import/parse
+### Local-First Access
 
-Request:
-- raw normalized workout text
+- read drafts and cached flows from local storage first
+- save edits locally first
+- keep a queue of pending writes when offline
 
-Response:
-- import draft id
-- parsed flow draft
+### Direct Supabase Access
 
-### POST /import/validate
+- sync import drafts, flows, flow exercises, and flow exercise sets
+- refresh canonical exercises into the local cache
+- authenticate the current user
 
-Request:
-- import draft id or draft payload
+### Optional Edge Function Calls
 
-Response:
-- validation issues
-- required missing fields
-
-### POST /import/resolve-exercises
-
-Request:
-- parsed exercise names and context
-
-Response:
-- canonical matches
-- candidate matches
-- unresolved items
-
-### POST /import/suggest
-
-Request:
-- draft payload plus unresolved fields
-
-Response:
-- suggested values with explanation metadata
-
-### POST /flows
-
-Request:
-- final user-confirmed flow payload
-
-Response:
-- saved flow id
+- suggest missing values with AI
+- any future privileged workflow that requires secret keys or trusted execution
 
 ## Security And Trust Boundaries
 
-- AI calls must happen on the server, not in the iOS client
-- Service credentials must never ship in the app bundle
-- The app should authenticate requests using normal user auth once auth is added
+- Enable RLS on every exposed table in `public`
+- The iOS app may ship with the Supabase project URL and publishable key, but never with secret or service-role credentials
 - Imported text should be treated as untrusted input
-- Final save should require server-side validation
+- AI calls that require secrets must happen in Edge Functions, not in the iOS client
+- If the app writes directly to Supabase, write permissions must be constrained by user-scoped RLS policies
+- Local cached data should be treated as user device state, not as the only durable copy
+
+## Offline And Sync Strategy
+
+### Offline-Capable Operations
+
+- viewing already-fetched flows and drafts
+- parsing imported workout text
+- validating draft structure
+- editing drafts
+- saving pending changes locally
+
+### Network-Required Operations
+
+- first-time sign in
+- first sync on a new device
+- fetching updated canonical exercises that are not already cached
+- AI suggestion requests
+- syncing local changes to Supabase
+
+### Sync Model
+
+- save locally first
+- mark records as pending sync
+- push changes in the background when connectivity is available
+- retry failed sync operations later
+- surface sync state in the UI when relevant
 
 ## Cost Plan
 
@@ -316,7 +346,7 @@ Response:
 - backend: Supabase free tier during development and early testing
 - expected user count: very small, roughly 10 active users initially
 
-This keeps infrastructure cost near zero while preserving a path to scale beyond local-only storage.
+This keeps infrastructure cost near zero while preserving a path to cross-device sync and acceptable offline behavior.
 
 ## Delivery Plan
 
@@ -325,10 +355,12 @@ This keeps infrastructure cost near zero while preserving a path to scale beyond
 - define flow, flow exercise, flow exercise set, and canonical exercise schemas
 - build import entry and review UI in SwiftUI
 - create Supabase tables
+- define initial RLS policies
+- define local persistence models for cached flows, drafts, and pending sync state
 
 ### Phase 2: Parsing And Validation
 
-- implement parse function
+- implement local parsing in the app
 - implement structural validation rules
 - return structured review payloads
 
@@ -337,13 +369,20 @@ This keeps infrastructure cost near zero while preserving a path to scale beyond
 - create canonical exercise table
 - add alias support
 - add fuzzy matching
+- cache canonical exercise data locally
 
-### Phase 4: AI Suggestions
+### Phase 4: Local-First Sync
 
-- add server-side suggestion flow for missing values
+- save drafts and flow edits locally first
+- build background sync to Supabase
+- expose sync status in the UI when needed
+
+### Phase 5: AI Suggestions
+
+- add Edge Function based suggestion flow for missing values
 - expose suggestions in the review UI
 
-### Phase 5: Save And Polish
+### Phase 6: Save And Polish
 
 - save finalized flows
 - refine error states
@@ -367,17 +406,23 @@ If AI is allowed to silently infer too much, user trust will drop. Suggestions m
 
 The MVP should not attempt to solve every workout format. It should optimize for a narrow, reliable import flow first.
 
+### 5. Sync Complexity
+
+Local-first architecture improves reliability, but introduces sync state and conflict handling. The MVP should keep conflict rules simple and avoid overly complex multi-device editing semantics.
+
 ## Open Questions
 
-- Should MVP require user accounts immediately, or can early test users operate with anonymous or local-only sessions?
+- Should MVP require user accounts immediately, or can early test users operate with anonymous Supabase sessions?
 - Should import drafts be persisted server-side from day one, or only held in app memory until save?
 - How large should the initial canonical exercise library be?
 - Should the app support custom user-created exercises in MVP?
 
 ## Final Recommendation
 
-Build LiftFlow as an iOS-first app using SwiftUI on the client and Supabase on the backend.
+Build LiftFlow as an iOS-first app using SwiftUI on the client and Supabase as the managed backend platform.
+
+Use a local-first app architecture with direct client-to-Supabase sync for MVP data operations, protected by Supabase Auth and RLS. Keep server-side code optional and limited to Supabase Edge Functions for AI suggestions or other secret-dependent work.
 
 Use PostgreSQL as the system of record. Treat [data_model_audit.md](/Users/elwin/code/LiftFlow/data_model_audit.md) as the current source of truth for the database shape.
 
-This gives the product a low-cost MVP path, keeps the architecture simple, and directly supports the core workflow of turning rough workout text into reliable structured flows.
+This gives the product a low-cost MVP path, keeps the architecture operationally simple, and supports reliable usage even when gym connectivity is poor.
