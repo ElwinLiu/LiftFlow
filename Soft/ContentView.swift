@@ -32,7 +32,7 @@ struct ContentView: View {
                     }
                 }
             }
-            .navigationTitle("LiftFlow")
+            .navigationTitle("Soft")
         }
     }
 }

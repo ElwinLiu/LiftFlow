@@ -1,4 +1,4 @@
-# LiftFlow Design Doc
+# Soft Design Doc
 
 ## Status
 
@@ -10,15 +10,15 @@ April 14, 2026
 
 ## Overview
 
-LiftFlow is an iOS-first workout app focused on turning messy workout ideas or chatbot-generated flows into structured, editable workout plans.
+Soft is an iOS-first workout app focused on turning messy workout ideas or chatbot-generated flows into structured, editable workout plans.
 
 The main product value is not generic workout logging and not generic AI chat. The product value is a guided import workflow:
 
 1. User creates or refines a flow outside the app
-2. User pastes normalized workout text into LiftFlow
-3. LiftFlow parses the text into structured workout data
-4. LiftFlow detects missing or ambiguous fields
-5. LiftFlow helps the user resolve issues manually or with AI suggestions
+2. User pastes normalized workout text into Soft
+3. Soft parses the text into structured workout data
+4. Soft detects missing or ambiguous fields
+5. Soft helps the user resolve issues manually or with AI suggestions
 6. User reviews and saves the finished flow
 
 ## Goals
@@ -124,7 +124,7 @@ The app should be local-first for active usage. Supabase remains the cross-devic
 
 ### Why Not CloudKit As Primary Backend
 
-CloudKit is a valid Apple-native sync option, but it is not the best center of gravity for this product. LiftFlow needs backend-style logic:
+CloudKit is a valid Apple-native sync option, but it is not the best center of gravity for this product. Soft needs backend-style logic:
 
 - parsing imported text
 - applying validation rules
@@ -139,13 +139,13 @@ Those workflows are easier to build and maintain around a managed relational bac
 
 1. User copies a normalization prompt from the app
 2. User pastes the prompt into a chatbot and gets normalized workout text
-3. User pastes normalized text into LiftFlow
-4. LiftFlow parses the text into structured draft data locally
-5. LiftFlow validates structural completeness of the draft locally
-6. LiftFlow resolves exercise names against the embedded canonical exercise catalog in Swift
-7. LiftFlow stores drafts and pending edits locally first
-8. LiftFlow syncs drafts and finalized flows to Supabase when connectivity is available
-9. If a secret-dependent AI action is needed later, LiftFlow calls a Supabase Edge Function for suggestions when online
+3. User pastes normalized text into Soft
+4. Soft parses the text into structured draft data locally
+5. Soft validates structural completeness of the draft locally
+6. Soft resolves exercise names against the embedded canonical exercise catalog in Swift
+7. Soft stores drafts and pending edits locally first
+8. Soft syncs drafts and finalized flows to Supabase when connectivity is available
+9. If a secret-dependent AI action is needed later, Soft calls a Supabase Edge Function for suggestions when online
 10. User reviews and edits the draft in the app
 11. User saves the finalized flow
 
@@ -225,7 +225,7 @@ Responsibility:
 
 ## Data Model
 
-The current database source of truth is [data_model_audit.md](/Users/elwin/code/LiftFlow/data_model_audit.md).
+The current database source of truth is [data_model_audit.md](/Users/elwin/code/Soft/data_model_audit.md).
 
 At a high level, the database currently centers on:
 
@@ -418,10 +418,10 @@ Local-first architecture improves reliability, but introduces sync state and con
 
 ## Final Recommendation
 
-Build LiftFlow as an iOS-first app using SwiftUI on the client and Supabase as the managed backend platform.
+Build Soft as an iOS-first app using SwiftUI on the client and Supabase as the managed backend platform.
 
 Use a local-first app architecture with direct client-to-Supabase sync for MVP data operations, protected by Supabase Auth and RLS. Keep server-side code optional and limited to Supabase Edge Functions for AI suggestions or other secret-dependent work.
 
-Use PostgreSQL as the system of record. Treat [data_model_audit.md](/Users/elwin/code/LiftFlow/data_model_audit.md) as the current source of truth for the database shape.
+Use PostgreSQL as the system of record. Treat [data_model_audit.md](/Users/elwin/code/Soft/data_model_audit.md) as the current source of truth for the database shape.
 
 This gives the product a low-cost MVP path, keeps the architecture operationally simple, and supports reliable usage even when gym connectivity is poor.
