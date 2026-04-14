@@ -10,20 +10,20 @@ April 12, 2026
 
 ## Overview
 
-LiftFlow is an iOS-first workout app focused on turning messy workout ideas or chatbot-generated routines into structured, editable workout plans.
+LiftFlow is an iOS-first workout app focused on turning messy workout ideas or chatbot-generated flows into structured, editable workout plans.
 
 The main product value is not generic workout logging and not generic AI chat. The product value is a guided import workflow:
 
-1. User creates or refines a routine outside the app
+1. User creates or refines a flow outside the app
 2. User pastes normalized workout text into LiftFlow
 3. LiftFlow parses the text into structured workout data
 4. LiftFlow detects missing or ambiguous fields
 5. LiftFlow helps the user resolve issues manually or with AI suggestions
-6. User reviews and saves the finished routine
+6. User reviews and saves the finished flow
 
 ## Goals
 
-- Make routine import feel simple and reliable
+- Make flow import feel simple and reliable
 - Minimize manual data entry
 - Keep the user in control of AI-generated assumptions
 - Build the MVP with low infrastructure cost and low operational complexity
@@ -42,11 +42,11 @@ The main product value is not generic workout logging and not generic AI chat. T
 
 ### 1. Normalization first
 
-The app should encourage users to normalize routines before import. This reduces parsing ambiguity and improves reliability.
+The app should encourage users to normalize flows before import. This reduces parsing ambiguity and improves reliability.
 
 ### 2. Structured before saved
 
-The app should not save raw AI output directly as a final routine. Imported text must become validated internal data first.
+The app should not save raw AI output directly as a final flow. Imported text must become validated internal data first.
 
 ### 3. User control over AI
 
@@ -54,7 +54,7 @@ AI may suggest missing values, but suggestions must be clearly labeled and user-
 
 ### 4. Draft before save
 
-Imported content should become a reviewable draft before it becomes a saved routine.
+Imported content should become a reviewable draft before it becomes a saved flow.
 
 ## Proposed Tech Stack
 
@@ -97,7 +97,7 @@ This should be treated as optional in MVP. The primary source of truth should be
 ### Why PostgreSQL
 
 - The core data is relational
-- The app needs structured routines, routine exercises, routine exercise sets, aliases, and canonical exercise records
+- The app needs structured flows, flow exercises, flow exercise sets, and canonical exercise records
 - Exercise name resolution benefits from SQL querying and fuzzy matching support
 
 ### Why TypeScript On The Backend
@@ -129,12 +129,12 @@ Those workflows are easier to build and maintain around a managed backend plus r
 6. Backend validates structural completeness of the draft
 7. Backend resolves exercise names against canonical exercise records
 8. Backend returns:
-   - parsed routine draft
+   - parsed flow draft
    - validation issues
    - exercise match candidates
    - AI suggestions for safe-to-suggest missing values
 9. User reviews and edits the draft in the app
-10. User saves the finalized routine
+10. User saves the finalized flow
 
 ## MVP Components
 
@@ -149,7 +149,7 @@ Those workflows are easier to build and maintain around a managed backend plus r
 
 #### 2. Import Review Screen
 
-- Displays parsed exercises in routine order
+- Displays parsed exercises in flow order
 - Highlights missing required fields
 - Shows AI-generated suggestions separately from confirmed values
 - Lets the user edit fields
@@ -157,8 +157,8 @@ Those workflows are easier to build and maintain around a managed backend plus r
 
 #### 3. Save Confirmation Screen
 
-- Shows the final routine summary
-- Saves validated routine data
+- Shows the final flow summary
+- Saves validated flow data
 
 ### Backend Services
 
@@ -166,7 +166,7 @@ Those workflows are easier to build and maintain around a managed backend plus r
 
 Responsibility:
 - accept pasted normalized text
-- convert text into an initial structured routine draft
+- convert text into an initial structured flow draft
 
 #### 2. Validate Draft Function
 
@@ -187,11 +187,11 @@ Responsibility:
 - generate suggestions only for fields safe to suggest
 - return values as suggestions, not confirmed data
 
-#### 5. Save Routine Function
+#### 5. Save Flow Function
 
 Responsibility:
-- accept user-confirmed routine data
-- persist final validated routine records
+- accept user-confirmed flow data
+- persist final validated flow records
 
 ## Data Model
 
@@ -199,19 +199,20 @@ The current database source of truth is [data_model_audit.md](/Users/elwin/code/
 
 At a high level, the database currently centers on:
 
-- `routines`
-- `routine_exercises`
-- `routine_exercise_sets`
+- `flows`
+- `flow_exercises`
+- `flow_exercise_sets`
 - `canonical_exercises`
-- `exercise_aliases`
 - `import_drafts`
 
 Important simplifications in the current model:
 
-- routines contain an ordered list of exercises directly
-- sets are stored separately in `routine_exercise_sets`
-- there is no `routine_sections` table
-- `exercise_type` is currently a routine-facing classification: `warmup`, `workout`, or `stretch`
+- flows contain an ordered list of exercises directly
+- sets are stored separately in `flow_exercise_sets`
+- there is no `flow_sections` table
+- `exercise_type` is currently a flow-facing classification: `warmup`, `workout`, or `stretch`
+- aliases are stored on `canonical_exercises.aliases` as a comma-separated field
+- canonical exercise instructional content should be split between plain `notes` and formatted `instructions`
 
 ## AI Usage Plan
 
@@ -262,7 +263,7 @@ Request:
 
 Response:
 - import draft id
-- parsed routine draft
+- parsed flow draft
 
 ### POST /import/validate
 
@@ -291,13 +292,13 @@ Request:
 Response:
 - suggested values with explanation metadata
 
-### POST /routines
+### POST /flows
 
 Request:
-- final user-confirmed routine payload
+- final user-confirmed flow payload
 
 Response:
-- saved routine id
+- saved flow id
 
 ## Security And Trust Boundaries
 
@@ -321,7 +322,7 @@ This keeps infrastructure cost near zero while preserving a path to scale beyond
 
 ### Phase 1: UX And Data Model
 
-- define routine, routine exercise, routine exercise set, and canonical exercise schemas
+- define flow, flow exercise, flow exercise set, and canonical exercise schemas
 - build import entry and review UI in SwiftUI
 - create Supabase tables
 
@@ -344,7 +345,7 @@ This keeps infrastructure cost near zero while preserving a path to scale beyond
 
 ### Phase 5: Save And Polish
 
-- save finalized routines
+- save finalized flows
 - refine error states
 - improve import confidence and review UX
 
@@ -379,4 +380,4 @@ Build LiftFlow as an iOS-first app using SwiftUI on the client and Supabase on t
 
 Use PostgreSQL as the system of record. Treat [data_model_audit.md](/Users/elwin/code/LiftFlow/data_model_audit.md) as the current source of truth for the database shape.
 
-This gives the product a low-cost MVP path, keeps the architecture simple, and directly supports the core workflow of turning rough workout text into reliable structured routines.
+This gives the product a low-cost MVP path, keeps the architecture simple, and directly supports the core workflow of turning rough workout text into reliable structured flows.

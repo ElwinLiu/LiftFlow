@@ -8,26 +8,26 @@ It intentionally avoids backend business logic, validation rules, parsing flow, 
 
 ## Tables
 
-### Table: `routines`
+### Table: `flows`
 
 | Column | Type | Nullable | Notes |
 | --- | --- | --- | --- |
 | `id` | UUID or text | No | Primary key |
 | `user_id` | UUID or text | No | Owning user |
-| `title` | text | No | Routine title |
-| `goal` | text | Yes | Optional goal |
-| `notes` | text | Yes | Optional routine notes |
+| `title` | text | No | Flow title |
+| `description` | text | Yes | Optional flow description |
+| `notes` | text | Yes | Optional flow notes |
 | `created_at` | timestamptz | No | Creation time |
 | `updated_at` | timestamptz | No | Last update time |
 
-### Table: `routine_exercises`
+### Table: `flow_exercises`
 
 | Column | Type | Nullable | Notes |
 | --- | --- | --- | --- |
-| `id` | UUID or text | No | Primary key for the routine-specific exercise entry |
-| `routine_id` | UUID or text | No | FK to `routines.id` |
+| `id` | UUID or text | No | Primary key for the flow-specific exercise entry |
+| `flow_id` | UUID or text | No | FK to `flows.id` |
 | `canonical_exercise_id` | UUID or text | Yes | FK to `canonical_exercises.id` when matched |
-| `order_index` | integer | No | Exercise order within the routine |
+| `order_index` | integer | No | Exercise order within the flow |
 | `original_name` | text | No | Original imported or user-entered name |
 | `display_name` | text | No | Name shown in the UI |
 | `exercise_type` | text | No | `warmup`, `workout`, or `stretch` |
@@ -35,21 +35,19 @@ It intentionally avoids backend business logic, validation rules, parsing flow, 
 | `created_at` | timestamptz | No | Creation time |
 | `updated_at` | timestamptz | No | Last update time |
 
-### Table: `routine_exercise_sets`
+### Table: `flow_exercise_sets`
 
 | Column | Type | Nullable | Notes |
 | --- | --- | --- | --- |
 | `id` | UUID or text | No | Primary key |
-| `routine_exercise_id` | UUID or text | No | FK to `routine_exercises.id` |
-| `order_index` | integer | No | Set order within the routine exercise |
+| `flow_exercise_id` | UUID or text | No | FK to `flow_exercises.id` |
+| `order_index` | integer | No | Set order within the flow exercise |
 | `reps` | integer | Yes | Optional rep count |
-| `duration_seconds` | integer | Yes | Optional timed set duration |
+| `duration_value` | numeric | Yes | Optional duration value for the set |
+| `duration_unit` | text | Yes | Optional duration unit such as `sec` or `min` |
 | `rest_seconds` | integer | Yes | Optional rest after the set |
-| `distance_value` | numeric | Yes | Optional distance value |
-| `distance_unit` | text | Yes | Optional distance unit |
 | `weight_value` | numeric | Yes | Optional programmed weight |
 | `weight_unit` | text | Yes | Optional weight unit such as `kg` or `lb` |
-| `notes` | text | Yes | Optional set notes |
 | `created_at` | timestamptz | No | Creation time |
 | `updated_at` | timestamptz | No | Last update time |
 
@@ -59,19 +57,18 @@ It intentionally avoids backend business logic, validation rules, parsing flow, 
 | --- | --- | --- | --- |
 | `id` | UUID or text | No | Primary key |
 | `name` | text | No | Canonical exercise name |
+| `aliases` | text | Yes | Comma-separated aliases, concatenated by `,` |
 | `equipment_json` | jsonb | Yes | Optional equipment list |
-| `is_active` | boolean | No | Soft-active flag |
+| `notes` | text | Yes | Optional plain-text notes for short cues, caveats, or coaching reminders |
+| `instructions` | text | Yes | Optional Markdown-backed how-to content rendered as formatted guidance in the UI |
 | `created_at` | timestamptz | No | Creation time |
 | `updated_at` | timestamptz | No | Last update time |
 
-### Table: `exercise_aliases`
+Recommended modeling note:
 
-| Column | Type | Nullable | Notes |
-| --- | --- | --- | --- |
-| `id` | UUID or text | No | Primary key |
-| `canonical_exercise_id` | UUID or text | No | FK to `canonical_exercises.id` |
-| `alias` | text | No | Alternate exercise name for matching |
-| `created_at` | timestamptz | No | Creation time |
+- use `notes` for short unformatted text
+- use `instructions` for reusable exercise how-to content
+- store Markdown in `instructions` and render it as formatted content in the client
 
 ### Table: `import_drafts`
 
