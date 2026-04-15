@@ -60,9 +60,16 @@ They should live in the Swift app bundle as embedded reference data with:
 - a stable `key`
 - a display `name`
 - `aliases` for import matching
-- optional `equipment`
+- canonical `equipment` references
+- a canonical primary focus body part
+- canonical `focus` body parts, with `primaryFocus` included in that set
 - optional `notes`
 - optional `instructions`
+
+The canonical exercise catalog should be supported by app-owned canonical reference lists for:
+
+- body parts
+- equipment
 
 The database only needs to persist the selected `canonical_exercise_key` on each `flow_exercises` row.
 

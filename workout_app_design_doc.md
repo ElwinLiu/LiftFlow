@@ -243,7 +243,7 @@ Important simplifications in the current model:
 - there is no `flow_sections` table
 - `exercise_type` is currently a flow-facing classification: `warmup`, `workout`, or `stretch`
 - `flow_exercises.canonical_exercise_key` stores the selected stable app-defined exercise key
-- aliases, equipment, notes, and instructions live in the embedded Swift catalog
+- aliases, equipment, `primaryFocus`, `focus`, notes, and instructions live in the embedded Swift catalog
 
 ## AI Usage Plan
 
