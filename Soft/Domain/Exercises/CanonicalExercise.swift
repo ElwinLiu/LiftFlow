@@ -9,6 +9,7 @@ struct CanonicalExercise: Identifiable, Hashable {
     let focus: [CanonicalBodyPart]
     let notes: String?
     let instructions: String?
+    let imageAssetName: String?
 
     init(
         key: String,
@@ -18,7 +19,8 @@ struct CanonicalExercise: Identifiable, Hashable {
         primaryFocus: CanonicalBodyPart,
         focus: [CanonicalBodyPart],
         notes: String?,
-        instructions: String?
+        instructions: String?,
+        imageAssetName: String? = nil
     ) {
         self.key = key
         self.name = name
@@ -28,6 +30,7 @@ struct CanonicalExercise: Identifiable, Hashable {
         self.focus = Self.normalizedFocus(primaryFocus: primaryFocus, focus: focus)
         self.notes = notes
         self.instructions = instructions
+        self.imageAssetName = imageAssetName
     }
 
     var id: String { key }
