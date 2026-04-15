@@ -7,24 +7,32 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		A00000000000000000000011 /* SoftApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000001 /* SoftApp.swift */; };
-		A00000000000000000000012 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000002 /* ContentView.swift */; };
+		A00000000000000000000011 /* AppEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000001 /* AppEntry.swift */; };
+		A00000000000000000000012 /* RootTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000002 /* RootTabView.swift */; };
 		A00000000000000000000013 /* SupabaseBootstrap.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000004 /* SupabaseBootstrap.swift */; };
 		A00000000000000000000014 /* CanonicalExerciseCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000005 /* CanonicalExerciseCatalog.swift */; };
 		A00000000000000000000015 /* CanonicalBodyPart.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000006 /* CanonicalBodyPart.swift */; };
 		A00000000000000000000016 /* CanonicalEquipment.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000007 /* CanonicalEquipment.swift */; };
 		A00000000000000000000017 /* CanonicalExercise.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000008 /* CanonicalExercise.swift */; };
+		A00000000000000000000018 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000009 /* HomeView.swift */; };
+		A00000000000000000000019 /* LibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0000000000000000000000A /* LibraryView.swift */; };
+		A0000000000000000000001A /* ExerciseLibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0000000000000000000000B /* ExerciseLibraryView.swift */; };
+		A0000000000000000000001B /* UIComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0000000000000000000000C /* UIComponents.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		A00000000000000000000001 /* SoftApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoftApp.swift; sourceTree = "<group>"; };
-		A00000000000000000000002 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		A00000000000000000000001 /* AppEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppEntry.swift; sourceTree = "<group>"; };
+		A00000000000000000000002 /* RootTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootTabView.swift; sourceTree = "<group>"; };
 		A00000000000000000000003 /* Soft.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Soft.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A00000000000000000000004 /* SupabaseBootstrap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseBootstrap.swift; sourceTree = "<group>"; };
 		A00000000000000000000005 /* CanonicalExerciseCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CanonicalExerciseCatalog.swift; sourceTree = "<group>"; };
 		A00000000000000000000006 /* CanonicalBodyPart.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CanonicalBodyPart.swift; sourceTree = "<group>"; };
 		A00000000000000000000007 /* CanonicalEquipment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CanonicalEquipment.swift; sourceTree = "<group>"; };
 		A00000000000000000000008 /* CanonicalExercise.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CanonicalExercise.swift; sourceTree = "<group>"; };
+		A00000000000000000000009 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
+		A0000000000000000000000A /* LibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryView.swift; sourceTree = "<group>"; };
+		A0000000000000000000000B /* ExerciseLibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseLibraryView.swift; sourceTree = "<group>"; };
+		A0000000000000000000000C /* UIComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIComponents.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -49,8 +57,9 @@
 		A00000000000000000000032 /* Soft */ = {
 			isa = PBXGroup;
 			children = (
-				A00000000000000000000001 /* SoftApp.swift */,
-				A00000000000000000000002 /* ContentView.swift */,
+				A00000000000000000000036 /* App */,
+				A00000000000000000000037 /* Features */,
+				A0000000000000000000003A /* Shared */,
 				A00000000000000000000004 /* SupabaseBootstrap.swift */,
 				A00000000000000000000034 /* Domain */,
 			);
@@ -82,6 +91,57 @@
 				A00000000000000000000005 /* CanonicalExerciseCatalog.swift */,
 			);
 			path = Exercises;
+			sourceTree = "<group>";
+		};
+		A00000000000000000000036 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				A00000000000000000000001 /* AppEntry.swift */,
+				A00000000000000000000002 /* RootTabView.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		A00000000000000000000037 /* Features */ = {
+			isa = PBXGroup;
+			children = (
+				A00000000000000000000038 /* Home */,
+				A00000000000000000000039 /* Library */,
+			);
+			path = Features;
+			sourceTree = "<group>";
+		};
+		A00000000000000000000038 /* Home */ = {
+			isa = PBXGroup;
+			children = (
+				A00000000000000000000009 /* HomeView.swift */,
+			);
+			path = Home;
+			sourceTree = "<group>";
+		};
+		A00000000000000000000039 /* Library */ = {
+			isa = PBXGroup;
+			children = (
+				A0000000000000000000000A /* LibraryView.swift */,
+				A0000000000000000000000B /* ExerciseLibraryView.swift */,
+			);
+			path = Library;
+			sourceTree = "<group>";
+		};
+		A0000000000000000000003A /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				A0000000000000000000003B /* UI */,
+			);
+			path = Shared;
+			sourceTree = "<group>";
+		};
+		A0000000000000000000003B /* UI */ = {
+			isa = PBXGroup;
+			children = (
+				A0000000000000000000000C /* UIComponents.swift */,
+			);
+			path = UI;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -150,9 +210,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A00000000000000000000011 /* SoftApp.swift in Sources */,
-				A00000000000000000000012 /* ContentView.swift in Sources */,
+				A00000000000000000000011 /* AppEntry.swift in Sources */,
+				A00000000000000000000012 /* RootTabView.swift in Sources */,
 				A00000000000000000000013 /* SupabaseBootstrap.swift in Sources */,
+				A00000000000000000000018 /* HomeView.swift in Sources */,
+				A00000000000000000000019 /* LibraryView.swift in Sources */,
+				A0000000000000000000001A /* ExerciseLibraryView.swift in Sources */,
+				A0000000000000000000001B /* UIComponents.swift in Sources */,
 				A00000000000000000000015 /* CanonicalBodyPart.swift in Sources */,
 				A00000000000000000000016 /* CanonicalEquipment.swift in Sources */,
 				A00000000000000000000017 /* CanonicalExercise.swift in Sources */,

@@ -1,10 +1,10 @@
 import SwiftUI
 
 @main
-struct SoftApp: App {
+struct AppEntry: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            RootTabView()
         }
     }
 }
