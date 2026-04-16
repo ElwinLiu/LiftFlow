@@ -6,6 +6,42 @@ private enum SectionSelectionSource {
     case sync
 }
 
+private enum ExerciseLibraryMetrics {
+    static let headerSpacing: CGFloat = 8
+    static let headerTopPadding: CGFloat = 8
+    static let headerRowSpacing: CGFloat = 10
+    static let listSectionSpacing: CGFloat = 12
+    static let listHorizontalPadding: CGFloat = 14
+    static let listBottomPadding: CGFloat = 18
+
+    static let sectionHeaderHorizontalPadding: CGFloat = 16
+    static let sectionHeaderVerticalPadding: CGFloat = 8
+    static let sectionHeaderSpacing: CGFloat = 8
+    static let sectionCardCornerRadius: CGFloat = 18
+
+    static let rowHorizontalPadding: CGFloat = 14
+    static let rowVerticalPadding: CGFloat = 8
+    static let rowContentSpacing: CGFloat = 10
+    static let rowThumbnailSize: CGFloat = 48
+    static let rowThumbnailCornerRadius: CGFloat = 12
+    static let rowDetailSpacing: CGFloat = 2
+    static let rowBadgeHorizontalPadding: CGFloat = 7
+    static let rowBadgeVerticalPadding: CGFloat = 3
+
+    static let jumpStripSpacing: CGFloat = 8
+    static let jumpStripHorizontalPadding: CGFloat = 16
+    static let jumpStripVerticalPadding: CGFloat = 4
+    static let jumpStripHeight: CGFloat = 72
+    static let jumpNodeSpacing: CGFloat = 6
+    static let jumpNodeIndicatorSize: CGFloat = 7
+    static let groupingMenuButtonSize: CGFloat = 42
+    static let groupingMenuCornerRadius: CGFloat = 14
+
+    static var rowDividerLeadingInset: CGFloat {
+        rowHorizontalPadding + rowThumbnailSize + rowContentSpacing
+    }
+}
+
 struct ExerciseLibraryView: View {
     @State private var groupingMode: ExerciseGroupingMode = .bodyPart
     @State private var selectedSectionID: String?
@@ -65,7 +101,7 @@ struct ExerciseLibraryView: View {
             Color(.systemGroupedBackground)
                 .ignoresSafeArea()
 
-            VStack(spacing: 12) {
+            VStack(spacing: ExerciseLibraryMetrics.headerSpacing) {
                 ExerciseLibraryHeader(
                     selection: $groupingMode,
                     sections: sectionModels,
@@ -79,7 +115,7 @@ struct ExerciseLibraryView: View {
 
                 mainContent
             }
-            .padding(.top, 12)
+            .padding(.top, ExerciseLibraryMetrics.headerTopPadding)
         }
     }
 
@@ -103,7 +139,7 @@ struct ExerciseLibraryView: View {
 
     private var sectionList: some View {
         ScrollView {
-            LazyVStack(spacing: 18, pinnedViews: [.sectionHeaders]) {
+            LazyVStack(spacing: ExerciseLibraryMetrics.listSectionSpacing, pinnedViews: [.sectionHeaders]) {
                 ForEach(sectionModels) { section in
                     ExerciseLibrarySection(
                         section: section,
@@ -111,10 +147,10 @@ struct ExerciseLibraryView: View {
                     )
                 }
             }
-            .padding(.horizontal, 16)
-            .padding(.bottom, 24)
+            .padding(.horizontal, ExerciseLibraryMetrics.listHorizontalPadding)
+            .padding(.bottom, ExerciseLibraryMetrics.listBottomPadding)
         }
-        .coordinateSpace(name: "ExerciseLibrarySectionScroll")
+        .coordinateSpace(.named("ExerciseLibrarySectionScroll"))
         .onPreferenceChange(ExerciseLibrarySectionOffsetPreferenceKey.self) { offsets in
             updateVisibleSection(using: offsets)
         }
@@ -182,24 +218,24 @@ private struct ExerciseLibrarySection: View {
             VStack(spacing: 0) {
                 ForEach(Array(section.exercises.enumerated()), id: \.element.id) { index, exercise in
                     CompactExerciseRow(exercise: exercise)
-                        .padding(.horizontal, 18)
-                        .padding(.vertical, 10)
+                        .padding(.horizontal, ExerciseLibraryMetrics.rowHorizontalPadding)
+                        .padding(.vertical, ExerciseLibraryMetrics.rowVerticalPadding)
 
                     if index < section.exercises.count - 1 {
                         Divider()
-                            .padding(.leading, 84)
+                            .padding(.leading, ExerciseLibraryMetrics.rowDividerLeadingInset)
                     }
                 }
             }
             .background(
-                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                RoundedRectangle(cornerRadius: ExerciseLibraryMetrics.sectionCardCornerRadius, style: .continuous)
                     .fill(Color(.secondarySystemGroupedBackground))
             )
         } header: {
             ExerciseSectionHeader(section: section)
                 .id(scrollTargetID)
-                .padding(.horizontal, 20)
-                .padding(.vertical, 10)
+                .padding(.horizontal, ExerciseLibraryMetrics.sectionHeaderHorizontalPadding)
+                .padding(.vertical, ExerciseLibraryMetrics.sectionHeaderVerticalPadding)
                 .background(Color(.systemGroupedBackground))
                 .background {
                     GeometryReader { proxy in
@@ -229,14 +265,8 @@ private struct ExerciseLibraryHeader: View {
     let onSelectSection: (String) -> Void
 
     var body: some View {
-        VStack(spacing: 10) {
-            Picker("Browse by", selection: $selection) {
-                ForEach(ExerciseGroupingMode.allCases) { mode in
-                    Text(mode.title).tag(mode)
-                }
-            }
-            .pickerStyle(.segmented)
-            .padding(.horizontal, 20)
+        HStack(alignment: .center, spacing: ExerciseLibraryMetrics.headerRowSpacing) {
+            ExerciseGroupingMenu(selection: $selection)
 
             if !sections.isEmpty {
                 SectionJumpStrip(
@@ -244,8 +274,12 @@ private struct ExerciseLibraryHeader: View {
                     selectedSectionID: selectedSectionID,
                     onSelectSection: onSelectSection
                 )
+                .frame(maxWidth: .infinity, alignment: .leading)
+            } else {
+                Spacer(minLength: 0)
             }
         }
+        .padding(.horizontal, ExerciseLibraryMetrics.jumpStripHorizontalPadding)
     }
 }
 
@@ -290,11 +324,6 @@ private struct SectionJumpStrip: View {
 
                     guard nearestIndex != highlightedIndex else { return }
                     highlightedIndex = nearestIndex
-
-                    let sectionID = sections[nearestIndex].id
-                    if selectedSectionID != sectionID {
-                        onSelectSection(sectionID)
-                    }
                 }
                 .onEnded { value in
                     let clamped = clampedOffset(
@@ -307,7 +336,11 @@ private struct SectionJumpStrip: View {
                         containerWidth: geometry.size.width,
                         itemWidth: itemWidth
                     )
-                    let sectionID = sections[nearestIndex].id
+                    guard let sectionID = sectionID(at: nearestIndex) else {
+                        isDragging = false
+                        dragOffset = 0
+                        return
+                    }
 
                     isDragging = false
                     highlightedIndex = nearestIndex
@@ -343,7 +376,7 @@ private struct SectionJumpStrip: View {
                         .buttonStyle(.plain)
                     }
                 }
-                .padding(.vertical, 6)
+                .padding(.vertical, ExerciseLibraryMetrics.jumpStripVerticalPadding)
                 .offset(x: resolvedOffset)
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
                 .onChange(of: sectionIDs, initial: true) { _, sectionIDs in
@@ -389,16 +422,20 @@ private struct SectionJumpStrip: View {
 
             }
         }
-        .frame(height: 82)
-        .padding(.horizontal, 20)
+        .frame(height: ExerciseLibraryMetrics.jumpStripHeight)
     }
 
     private var sectionIDs: [String] {
         sections.map(\.id)
     }
 
+    private func sectionID(at index: Int) -> String? {
+        guard sections.indices.contains(index) else { return nil }
+        return sections[index].id
+    }
+
     private func selectSection(at index: Int) {
-        guard sections.indices.contains(index) else { return }
+        guard let sectionID = sectionID(at: index) else { return }
 
         isDragging = false
         highlightedIndex = index
@@ -408,7 +445,6 @@ private struct SectionJumpStrip: View {
             dragOffset = 0
         }
 
-        let sectionID = sections[index].id
         if selectedSectionID != sectionID {
             onSelectSection(sectionID)
         }
@@ -452,7 +488,7 @@ private struct SectionJumpStrip: View {
     }
 
     private func sectionItemWidth(for availableWidth: CGFloat) -> CGFloat {
-        min(82, max(64, availableWidth * 0.18))
+        min(78, max(60, availableWidth * 0.17))
     }
 }
 
@@ -463,13 +499,16 @@ private struct TimelineNode: View {
     let showsTrailingConnector: Bool
 
     var body: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: ExerciseLibraryMetrics.jumpNodeSpacing) {
             HStack(spacing: 0) {
                 connector(visible: showsLeadingConnector)
 
                 Circle()
                     .fill(isSelected ? Color.accentColor : Color.secondary.opacity(0.28))
-                    .frame(width: 8, height: 8)
+                    .frame(
+                        width: ExerciseLibraryMetrics.jumpNodeIndicatorSize,
+                        height: ExerciseLibraryMetrics.jumpNodeIndicatorSize
+                    )
                     .overlay {
                         Circle()
                             .stroke(Color(.systemGroupedBackground), lineWidth: 2)
@@ -505,22 +544,63 @@ private struct TimelineNode: View {
     }
 }
 
+private struct ExerciseGroupingMenu: View {
+    @Binding var selection: ExerciseGroupingMode
+
+    var body: some View {
+        Menu {
+            ForEach(ExerciseGroupingMode.allCases) { mode in
+                Button {
+                    selection = mode
+                } label: {
+                    Label(mode.title, systemImage: mode.menuSystemImage)
+                }
+            }
+        } label: {
+            Image(systemName: "slider.horizontal.3")
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(.primary)
+                .frame(
+                    width: ExerciseLibraryMetrics.groupingMenuButtonSize,
+                    height: ExerciseLibraryMetrics.groupingMenuButtonSize
+                )
+                .background(
+                    RoundedRectangle(
+                        cornerRadius: ExerciseLibraryMetrics.groupingMenuCornerRadius,
+                        style: .continuous
+                    )
+                    .fill(Color(.secondarySystemGroupedBackground))
+                )
+                .overlay {
+                    RoundedRectangle(
+                        cornerRadius: ExerciseLibraryMetrics.groupingMenuCornerRadius,
+                        style: .continuous
+                    )
+                    .stroke(Color.primary.opacity(0.06), lineWidth: 1)
+                }
+        }
+        .accessibilityLabel("Choose exercise grouping")
+        .accessibilityValue(selection.title)
+        .accessibilityHint("Switch between body part and equipment categories")
+    }
+}
+
 private struct ExerciseSectionHeader: View {
     let section: ExerciseSectionModel
 
     var body: some View {
-        HStack(alignment: .firstTextBaseline, spacing: 10) {
+        HStack(alignment: .firstTextBaseline, spacing: ExerciseLibraryMetrics.sectionHeaderSpacing) {
             Image(systemName: section.systemImage)
-                .font(.headline)
+                .font(.subheadline.weight(.semibold))
                 .foregroundStyle(.secondary)
                 .accessibilityHidden(true)
 
             Text(section.title)
-                .font(.title3.weight(.semibold))
+                .font(.headline.weight(.semibold))
                 .foregroundStyle(.primary)
 
             Text(section.subtitle)
-                .font(.footnote.weight(.medium))
+                .font(.caption.weight(.medium))
                 .foregroundStyle(.secondary)
 
             Spacer(minLength: 0)
@@ -533,23 +613,28 @@ private struct CompactExerciseRow: View {
     let exercise: CanonicalExercise
 
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: ExerciseLibraryMetrics.rowContentSpacing) {
             thumbnail
             details
             Spacer(minLength: 0)
             focusBadge
         }
-        .padding(.vertical, 2)
         .accessibilityElement(children: .combine)
     }
 
     private var thumbnail: some View {
-        ExerciseThumbnailView(imageAssetName: exercise.imageAssetName, cornerRadius: 14)
-            .frame(width: 54, height: 54)
+        ExerciseThumbnailView(
+            imageAssetName: exercise.imageAssetName,
+            cornerRadius: ExerciseLibraryMetrics.rowThumbnailCornerRadius
+        )
+        .frame(
+            width: ExerciseLibraryMetrics.rowThumbnailSize,
+            height: ExerciseLibraryMetrics.rowThumbnailSize
+        )
     }
 
     private var details: some View {
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: ExerciseLibraryMetrics.rowDetailSpacing) {
             Text(exercise.name)
                 .font(.subheadline.weight(.semibold))
                 .foregroundStyle(.primary)
@@ -571,8 +656,8 @@ private struct CompactExerciseRow: View {
         Text(exercise.primaryFocus.name)
             .font(.caption2.weight(.semibold))
             .foregroundStyle(.secondary)
-            .padding(.horizontal, 8)
-            .padding(.vertical, 4)
+            .padding(.horizontal, ExerciseLibraryMetrics.rowBadgeHorizontalPadding)
+            .padding(.vertical, ExerciseLibraryMetrics.rowBadgeVerticalPadding)
             .background(Color(.tertiarySystemGroupedBackground), in: Capsule())
     }
 
@@ -604,6 +689,15 @@ private enum ExerciseGroupingMode: String, CaseIterable, Identifiable {
             "Body Part"
         case .equipment:
             "Equipment"
+        }
+    }
+
+    var menuSystemImage: String {
+        switch self {
+        case .bodyPart:
+            "figure.strengthtraining.traditional"
+        case .equipment:
+            "dumbbell"
         }
     }
 
