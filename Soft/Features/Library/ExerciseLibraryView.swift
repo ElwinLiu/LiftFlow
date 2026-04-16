@@ -15,7 +15,8 @@ struct ExerciseLibraryView: View {
 
     private func libraryContent(using scrollProxy: ScrollViewProxy) -> some View {
         ZStack {
-            BackgroundCanvas()
+            Color(.systemGroupedBackground)
+                .ignoresSafeArea()
 
             VStack(spacing: 12) {
                 ExerciseLibraryHeader(
@@ -28,9 +29,7 @@ struct ExerciseLibraryView: View {
 
                 mainContent
             }
-            .padding(.horizontal, 20)
             .padding(.top, 12)
-            .padding(.bottom, 12)
         }
     }
 
@@ -56,24 +55,28 @@ struct ExerciseLibraryView: View {
         List {
             ForEach(sectionModels) { section in
                 Section {
-                    ForEach(section.exercises) { exercise in
+                    ForEach(Array(section.exercises.enumerated()), id: \.element.id) { index, exercise in
                         CompactExerciseRow(exercise: exercise)
                             .listRowInsets(
-                                EdgeInsets(top: 6, leading: 0, bottom: 6, trailing: 0)
+                                EdgeInsets(top: 8, leading: 20, bottom: 8, trailing: 20)
                             )
-                            .listRowSeparator(.hidden)
-                            .listRowBackground(Color.clear)
+                            .overlay(alignment: .top) {
+                                if index == 0 {
+                                    Color.clear
+                                        .frame(height: 1)
+                                        .id(section.id)
+                                }
+                            }
                     }
                 } header: {
                     ExerciseSectionHeader(section: section)
                         .textCase(nil)
-                        .id(section.id)
                 }
             }
         }
-        .listStyle(.plain)
+        .listStyle(.insetGrouped)
         .scrollContentBackground(.hidden)
-        .background(Color.clear)
+        .background(Color(.systemGroupedBackground))
     }
 
     private var hasSections: Bool {
@@ -98,14 +101,13 @@ private struct ExerciseLibraryHeader: View {
 
     var body: some View {
         VStack(spacing: 10) {
-            Surface(padding: 14) {
-                Picker("Browse by", selection: $selection) {
-                    ForEach(ExerciseGroupingMode.allCases) { mode in
-                        Text(mode.title).tag(mode)
-                    }
+            Picker("Browse by", selection: $selection) {
+                ForEach(ExerciseGroupingMode.allCases) { mode in
+                    Text(mode.title).tag(mode)
                 }
-                .pickerStyle(.segmented)
             }
+            .pickerStyle(.segmented)
+            .padding(.horizontal, 20)
 
             if !sections.isEmpty {
                 SectionJumpStrip(
@@ -128,28 +130,16 @@ private struct SectionJumpStrip: View {
                     Button {
                         onSelect(section.id)
                     } label: {
-                        HStack(spacing: 6) {
-                            Image(systemName: section.systemImage)
-                                .font(.caption.weight(.semibold))
-                                .accessibilityHidden(true)
-
-                            Text(section.title)
-                                .font(.footnote.weight(.medium))
-                                .lineLimit(1)
-                        }
-                        .foregroundStyle(Theme.ink)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 8)
-                        .background(.ultraThinMaterial, in: Capsule())
-                        .overlay(
-                            Capsule()
-                                .stroke(.white.opacity(0.2), lineWidth: 1)
-                        )
+                        Label(section.title, systemImage: section.systemImage)
+                            .font(.footnote)
+                            .lineLimit(1)
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(.bordered)
+                    .buttonBorderShape(.capsule)
+                    .tint(.secondary)
                 }
             }
-            .padding(.horizontal, 2)
+            .padding(.horizontal, 20)
         }
     }
 }
@@ -161,12 +151,12 @@ private struct ExerciseSectionHeader: View {
         HStack(alignment: .firstTextBaseline, spacing: 10) {
             Image(systemName: section.systemImage)
                 .font(.headline)
-                .foregroundStyle(Theme.accent)
+                .foregroundStyle(.secondary)
                 .accessibilityHidden(true)
 
             Text(section.title)
                 .font(.title3.weight(.semibold))
-                .foregroundStyle(Theme.ink)
+                .foregroundStyle(.primary)
 
             Text(section.subtitle)
                 .font(.footnote.weight(.medium))
@@ -174,7 +164,7 @@ private struct ExerciseSectionHeader: View {
 
             Spacer(minLength: 0)
         }
-        .padding(.horizontal, 4)
+        .padding(.horizontal, 2)
     }
 }
 
@@ -188,10 +178,7 @@ private struct CompactExerciseRow: View {
             Spacer(minLength: 0)
             focusBadge
         }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 10)
-        .background(rowBackground)
-        .overlay(rowBorder)
+        .padding(.vertical, 2)
         .accessibilityElement(children: .combine)
     }
 
@@ -212,7 +199,7 @@ private struct CompactExerciseRow: View {
                 .foregroundStyle(.secondary)
                 .lineLimit(1)
 
-            Text(focusText)
+            focusText
                 .font(.caption2)
                 .foregroundStyle(.secondary)
                 .lineLimit(1)
@@ -222,29 +209,26 @@ private struct CompactExerciseRow: View {
     private var focusBadge: some View {
         Text(exercise.primaryFocus.name)
             .font(.caption2.weight(.semibold))
-            .foregroundStyle(Theme.ink)
+            .foregroundStyle(.secondary)
             .padding(.horizontal, 8)
-            .padding(.vertical, 6)
-            .background(Theme.accent.opacity(0.14), in: Capsule())
+            .padding(.vertical, 4)
+            .background(Color(.tertiarySystemGroupedBackground), in: Capsule())
     }
 
     private var equipmentText: String {
         exercise.equipment.map(\.name).joined(separator: ", ")
     }
 
-    private var focusText: String {
-        exercise.focus.map(\.name).joined(separator: " • ")
+    private var focusText: Text {
+        guard let primary = exercise.focus.first else {
+            return Text("")
+        }
+
+        return exercise.focus.dropFirst().reduce(Text(primary.name).bold()) { partialText, bodyPart in
+            partialText + Text(" • ") + Text(bodyPart.name)
+        }
     }
 
-    private var rowBackground: some View {
-        RoundedRectangle(cornerRadius: 20, style: .continuous)
-            .fill(.ultraThinMaterial)
-    }
-
-    private var rowBorder: some View {
-        RoundedRectangle(cornerRadius: 20, style: .continuous)
-            .stroke(.white.opacity(0.2), lineWidth: 1)
-    }
 }
 
 private enum ExerciseGroupingMode: String, CaseIterable, Identifiable {
