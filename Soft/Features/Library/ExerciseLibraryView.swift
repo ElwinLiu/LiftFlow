@@ -295,13 +295,14 @@ private struct SectionJumpStrip: View {
     var body: some View {
         GeometryReader { geometry in
             let itemWidth = sectionItemWidth(for: geometry.size.width)
-            let centeredOffset = centeredOffset(
+            let centeredBaseOffset = centeredOffset(
                 for: settledIndex,
                 containerWidth: geometry.size.width,
                 itemWidth: itemWidth
             )
+            let activeIndex = isDragging ? highlightedIndex : settledIndex
             let resolvedOffset = clampedOffset(
-                centeredOffset + dragOffset,
+                centeredBaseOffset + dragOffset,
                 containerWidth: geometry.size.width,
                 itemWidth: itemWidth
             )
@@ -310,12 +311,12 @@ private struct SectionJumpStrip: View {
                     isDragging = true
 
                     let clamped = clampedOffset(
-                        centeredOffset + value.translation.width,
+                        centeredBaseOffset + value.translation.width,
                         containerWidth: geometry.size.width,
                         itemWidth: itemWidth
                     )
-                    dragOffset = clamped - centeredOffset
 
+                    dragOffset = clamped - centeredBaseOffset
                     let nearestIndex = nearestIndex(
                         for: clamped,
                         containerWidth: geometry.size.width,
@@ -324,10 +325,14 @@ private struct SectionJumpStrip: View {
 
                     guard nearestIndex != highlightedIndex else { return }
                     highlightedIndex = nearestIndex
+
+                    guard let sectionID = sectionID(at: nearestIndex),
+                          selectedSectionID != sectionID else { return }
+                    onSelectSection(sectionID)
                 }
                 .onEnded { value in
                     let clamped = clampedOffset(
-                        centeredOffset + value.translation.width,
+                        centeredBaseOffset + value.translation.width,
                         containerWidth: geometry.size.width,
                         itemWidth: itemWidth
                     )
@@ -342,13 +347,13 @@ private struct SectionJumpStrip: View {
                         return
                     }
 
-                    isDragging = false
-                    highlightedIndex = nearestIndex
-
                     withAnimation(.easeInOut(duration: 0.22)) {
                         settledIndex = nearestIndex
+                        highlightedIndex = nearestIndex
                         dragOffset = 0
                     }
+
+                    isDragging = false
 
                     if selectedSectionID != sectionID {
                         onSelectSection(sectionID)
@@ -367,6 +372,7 @@ private struct SectionJumpStrip: View {
                             TimelineNode(
                                 section: section,
                                 isSelected: isSelected,
+                                isCompleted: index < activeIndex,
                                 showsLeadingConnector: index > 0,
                                 showsTrailingConnector: index < sections.count - 1
                             )
@@ -405,7 +411,7 @@ private struct SectionJumpStrip: View {
                         isDragging == false,
                         let newSectionID,
                         let newIndex = sectionIDs.firstIndex(of: newSectionID),
-                        newIndex != settledIndex || highlightedIndex != newIndex
+                        newIndex != settledIndex
                     else {
                         return
                     }
@@ -419,7 +425,6 @@ private struct SectionJumpStrip: View {
                 .clipped()
                 .contentShape(Rectangle())
                 .highPriorityGesture(dragGesture, including: .all)
-
             }
         }
         .frame(height: ExerciseLibraryMetrics.jumpStripHeight)
@@ -495,13 +500,14 @@ private struct SectionJumpStrip: View {
 private struct TimelineNode: View {
     let section: ExerciseSectionModel
     let isSelected: Bool
+    let isCompleted: Bool
     let showsLeadingConnector: Bool
     let showsTrailingConnector: Bool
 
     var body: some View {
         VStack(spacing: ExerciseLibraryMetrics.jumpNodeSpacing) {
             HStack(spacing: 0) {
-                connector(visible: showsLeadingConnector)
+                connector(visible: showsLeadingConnector, isActive: isSelected || isCompleted)
 
                 Circle()
                     .fill(isSelected ? Color.accentColor : Color.secondary.opacity(0.28))
@@ -514,7 +520,7 @@ private struct TimelineNode: View {
                             .stroke(Color(.systemGroupedBackground), lineWidth: 2)
                     }
 
-                connector(visible: showsTrailingConnector)
+                connector(visible: showsTrailingConnector, isActive: isCompleted)
             }
 
             Text(section.title)
@@ -530,10 +536,10 @@ private struct TimelineNode: View {
     }
 
     @ViewBuilder
-    private func connector(visible: Bool) -> some View {
+    private func connector(visible: Bool, isActive: Bool) -> some View {
         if visible {
             Capsule()
-                .fill(Color.secondary.opacity(isSelected ? 0.28 : 0.14))
+                .fill(isActive ? Color.accentColor.opacity(0.3) : Color.secondary.opacity(0.14))
                 .frame(maxWidth: .infinity)
                 .frame(height: 2)
         } else {
